@@ -1,5 +1,3 @@
-#!/usr/bin/perl
-
 package MyCPAN::Indexer;
 use strict;
 use warnings;
@@ -9,15 +7,17 @@ use Data::Dumper;
 use File::Path;
 use Log::Log4perl qw(:easy);
 
-Log::Log4perl->easy_init($ERROR);
-
-__PACKAGE__->run( @ARGV ) unless caller;
+sub new 
+        {
+        my $class = shift;
+        return bless { dist_info => {} }, $class;
+        }
 
 sub run 
 	{
 	my $class = shift;
 	
-	my $self = bless { dist_info => {} }, $class;
+	my $self = $class->new;
 	
 	$self->set_run_info( 'root_working_dir', cwd() );
 	
@@ -437,7 +437,7 @@ sub report_dist_info
 	
 	print "\n";
 	}
-	
+1;	
 __END__
 dist_name
 dist_archive_type zip bz2 tgz
@@ -450,4 +450,3 @@ scripts
 dist_size
 run info
 	unpack dir
- 
