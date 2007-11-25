@@ -15,46 +15,49 @@ sub new
 
 sub run 
 	{
-	my $class = shift;
-	
-	my $self = $class->new;
+	my $self = shift;
 	
 	$self->set_run_info( 'root_working_dir', cwd() );
 	
 	my $count = 0;
 	
 	DIST: foreach my $dist ( @_ )
-		{
-		$self->clear_dist_info;
-		
-		INFO( "Processing $dist\n" );
-		
-		$self->set_dist_info( 'dist', $dist );
-
-		$self->unpack_dist( $dist ) or next;
-		my $dist_dir = $self->dist_info( 'dist_dir' );
-
-		DEBUG( "Dist dir is $dist_dir\n" );
-		chdir( $self->dist_info( 'dist_dir' ) )
-			or do { ERROR( "Could not change to $dist_dir! $!" ); next DIST };
-	
-		$self->get_file_list or next;
-		
-		$self->parse_meta_files;
-
-		$self->run_build_file;
-		
-		$self->get_blib_file_list or next;
-		
-		$self->get_module_versions;
-		
+		{    
+                INFO( "Processing $dist\n" );
+                $self->index_dist($dist);
 		INFO( "Finished processing $dist\n" );
 		DEBUG( Dumper( $self ) );
-		
 		$self->report_dist_info;
 		}
 	}
-	
+
+sub index_dist {
+    my $self = shift;
+    my $dist = shift;
+    
+    $self->clear_dist_info;
+
+    $self->set_dist_info( 'dist', $dist );
+    
+    $self->unpack_dist( $dist ) or next;
+    my $dist_dir = $self->dist_info( 'dist_dir' );
+    
+    DEBUG( "Dist dir is $dist_dir\n" );
+    chdir( $self->dist_info( 'dist_dir' ) )
+      or do { ERROR( "Could not change to $dist_dir! $!" ); return };
+    
+    $self->get_file_list or return;
+    
+    $self->parse_meta_files;
+    
+    $self->run_build_file;
+    
+    $self->get_blib_file_list or return;
+    
+    $self->get_module_versions;  
+    return 1;
+}	
+
 sub examine
 	{
 	my( $class, $dist ) = @_;

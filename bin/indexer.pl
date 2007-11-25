@@ -8,5 +8,5 @@ use lib "$Bin/../lib";
 use Log::Log4perl qw(:easy);
 use MyCPAN::Indexer;
 
-Log::Log4perl->easy_init( $ERROR );
-MyCPAN::Indexer->run( @ARGV );
+Log::Log4perl->easy_init( $DEBUG );
+MyCPAN::Indexer->new->run( @ARGV );
