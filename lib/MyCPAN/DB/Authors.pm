@@ -9,20 +9,19 @@ __PACKAGE__->load_components("Core");
 __PACKAGE__->table("authors");
 __PACKAGE__->add_columns(
   "id",
+  { data_type => 'INTEGER', is_nullable => 0, size => undef,
+    is_auto_increment => 1 },
+  "pause_id",
   { data_type => "varchar", is_nullable => 0, size => 32 },
   "name",
   { data_type => "TEXT", is_nullable => 0, size => undef },
   "email",
-  { data_type => "TEXT", is_nullable => 0, size => undef },
+  { data_type => "TEXT", is_nullable => 1, size => undef },
   "website",
-  { data_type => "TEXT", is_nullable => 0, size => undef },
+  { data_type => "TEXT", is_nullable => 1, size => undef },
 );
 __PACKAGE__->set_primary_key("id");
+__PACKAGE__->add_unique_constraint( pause => [qw/pause_id/] );
+__PACKAGE__->has_many( distributions => 'MyCPAN::DB::Distributions', 'author');
 
-
-# Created by DBIx::Class::Schema::Loader v0.04004 @ 2007-11-25 03:18:36
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9vFVuRVnK515V+hB5QEVyg
-
-
-# You can replace this text with custom content, and it will be preserved on regeneration
 1;
