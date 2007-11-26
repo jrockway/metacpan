@@ -16,7 +16,7 @@ __PACKAGE__->add_columns(
   "package",
   { data_type => "TEXT", is_nullable => 0, size => undef },
   "version",
-  { data_type => "TEXT", is_nullable => 0, size => undef },
+  { data_type => "TEXT", is_nullable => 1, size => undef },
 );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to( distribution => 'MyCPAN::DB::Distributions' );

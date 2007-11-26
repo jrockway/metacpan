@@ -26,6 +26,10 @@ coerce 'LogLevel'
   => from 'Str',
   => via { $LOG_LEVELS{$_} };
 
+MooseX::Getopt::OptionTypeMap->add_option_type_to_map(
+    'LogLevel' => '=s'
+);
+
 has 'dists' => (
     isa        => 'ArrayRef',
     is         => 'ro',
@@ -36,8 +40,14 @@ has 'dists' => (
 has 'log_level' => (
     isa     => 'LogLevel',
     is      => 'ro',
-    default => $ERROR,
+    default => 'error',
+    coerce  => 1,
 );
+
+sub BUILD {
+    my $self = shift;
+    $self->_setup_log;
+}
 
 sub _setup_log {
     my $self = shift;
@@ -47,13 +57,24 @@ sub _setup_log {
 sub run {
     my $self = shift;
     foreach my $filename ($self->dists) {
-        eval {
-            my $dist = MyCPAN::Distribution->new(filename => $filename);
-            print "Indexed $filename\n";
-            print Dumper($dist);
+        INFO ( "examining [$filename]" );
+        eval { 
+            $self->index_dist($filename);
+            INFO( "successfully indexed [$filename] " );
         };
-        warn "error indexing $filename: $@";
+        ERROR( "error indexing $filename: $@" ) if $@;
     }
+}
+
+sub index_dist {
+    my $self = shift;
+    my $filename = shift;
+    
+    my $dist = MyCPAN::Distribution->new(filename => $filename);
+    print "Indexed $filename\n";
+    print Dumper($dist);
+    
+    return $dist;
 }
 
 1;

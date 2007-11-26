@@ -16,6 +16,10 @@ use File::pushd;
 
 enum 'ArchiveType' => qw(tgz bz2);
 
+subtype 'MD5' 
+  => as 'Str'
+  => where { /^[0-9a-f]{32}$/ };
+
 has 'filename' => (
     is        => 'ro',
     isa       => File,
@@ -116,11 +120,20 @@ has 'module_versions' => (
     default => sub { {} },
 );
 
+has 'md5' => (
+    is        => 'rw',
+    isa       => 'MD5',
+    predicate => 'has_md5',
+);
+
 # this is where we index everything, so that the above attributes
 # are always populated
 sub BUILD {
     my $self = shift;
-
+    my $filename = $self->filename;
+    die "[$filename] does not exist" unless -e $filename;
+    
+    $self->calc_md5;
     $self->unpack;
     { 
         my $dir = pushd($self->dist_dir);
@@ -326,6 +339,24 @@ sub eval_version {
     
     DEBUG( "Evaled to version [$version]" );
     return $version;
+}
+
+sub calc_md5 {
+    my $self = shift;
+    my $filename = $self->filename;
+    
+    DEBUG( "computing md5 of [$filename]" );
+
+    open my $fh, '<', $filename 
+      or die "failed to open $filename for reading: $!";
+    
+    my $ctx = Digest::MD5->new;
+    $ctx->addfile($fh);
+    my $md5 = $ctx->hexdigest;
+
+    DEBUG( "md5 of [$filename] is [$md5]" );
+    
+    return $self->md5($md5);
 }
 
 sub cleanup {
