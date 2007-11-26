@@ -5,8 +5,5 @@ use warnings;
 use FindBin '$Bin';
 use lib "$Bin/../lib";
 
-use Log::Log4perl qw(:easy);
-use MyCPAN::Indexer;
-
-Log::Log4perl->easy_init( $DEBUG );
-MyCPAN::Indexer->new->run( @ARGV );
+use MyCPAN::Script::Indexer;
+MyCPAN::Script::Indexer->new_with_options->run;
