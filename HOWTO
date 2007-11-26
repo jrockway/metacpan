@@ -1,0 +1,13 @@
+First, start by creating the database:
+
+  $ dbicdeploy -Ilib MyCPAN::Database DBI:SQLite:database
+
+Then add some dists to the database:
+
+  $ perl bin/index_to_database.pl --database DBI:SQLite:database \ 
+    --log_level debug --dist /path/to/a/tarball.tar.gz
+
+If that's not working, try the plain indexer to get a dump of all the
+info:
+
+  $ perl bin/indexer.pl --dist /path/to/a/tarball.tar.gz

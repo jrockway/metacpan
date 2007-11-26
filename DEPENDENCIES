@@ -1,0 +1,23 @@
+# this should be a Makefile.PL
+
+Archive::Extract
+DBIx::Class
+Data::Dumper
+DateTime
+Digest::MD5
+ExtUtils::Manifest
+File::Path
+File::Spec
+File::Temp
+File::pushd
+IPC::Open2
+Log::Log4perl
+Moose
+Moose::Util::TypeConstraints
+Moose::Util::TypeConstraints
+MooseX::AttributeHelpers
+MooseX::Getopt
+MooseX::Types::Path::Class
+MyCPAN::Distribution
+Perl6::Junction 
+YAML::Syck
