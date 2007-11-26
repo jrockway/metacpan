@@ -13,6 +13,7 @@ use YAML::Syck ();
 use IPC::Open2;
 use File::Path;
 use File::pushd;
+use Digest::MD5 ();
 
 enum 'ArchiveType' => qw(tgz bz2);
 

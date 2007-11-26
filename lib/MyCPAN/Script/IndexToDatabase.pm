@@ -2,7 +2,6 @@ package MyCPAN::Script::IndexToDatabase;
 use Moose;
 
 use MyCPAN::DB;
-use Digest::MD5 qw(md5_hex);
 use DateTime;
 
 extends 'MyCPAN::Script::Indexer';
