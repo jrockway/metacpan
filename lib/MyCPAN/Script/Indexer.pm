@@ -15,7 +15,6 @@ my %LOG_LEVELS = (
     warning => $WARN,
     info    => $INFO,
     debug   => $DEBUG,
-    foo     => 1,
 );
 
 subtype 'LogLevel' 
