@@ -144,10 +144,10 @@ sub BUILD {
     $self->unpack;
     { 
         my $dir = pushd($self->dist_dir);
-        $self->get_file_list or return;
+        $self->get_file_list;
         $self->parse_meta_files;
         $self->run_build_file;
-        $self->get_blib_file_list or return;
+        $self->get_blib_file_list;
         $self->get_module_versions;  
     }
 }
