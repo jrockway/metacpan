@@ -22,7 +22,22 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to( author => 'MyCPAN::DB::Authors' );
-__PACKAGE__->has_many( modules => 'MyCPAN::DB::Modules', 'distribution');
+__PACKAGE__->has_many( modules => 'MyCPAN::DB::Modules', 'distribution' );
+__PACKAGE__->has_many(
+    files =>
+      'MyCPAN::DB::DistributionManifest',
+    'distribution'
+);
+__PACKAGE__->has_many(
+    prerequisites =>
+      'MyCPAN::DB::DistributionPrerequisites',
+    'distribution'
+);
+__PACKAGE__->has_many(
+    metadata =>
+      'MyCPAN::DB::DistributionMetadata',
+    'distribution'
+);
 
 1;
 
