@@ -38,11 +38,10 @@ override 'index_dist' => sub {
                 release_date => DateTime->now, 
             });
 
-            my $modules = $dist->module_versions;
-            foreach my $module (keys %$modules){
+            foreach my $module ($dist->modules){
                 $db_dist->create_related( modules => {
                     package => $module,
-                    version => $modules->{$module},
+                    version => $dist->module_version($module),
                 });
             }
         }

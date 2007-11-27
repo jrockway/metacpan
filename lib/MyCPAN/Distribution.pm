@@ -116,9 +116,15 @@ has 'module_list' => (
 );
 
 has 'module_versions' => (
-    is      => 'rw',
-    isa     => 'HashRef',
-    default => sub { {} },
+    metaclass  => 'Collection::Hash',
+    is         => 'rw',
+    isa        => 'HashRef',
+    default    => sub { {} },
+    provides   => {
+        keys => 'modules',
+        get  => 'module_version',
+    },
+    auto_deref => 1,
 );
 
 has 'md5' => (
