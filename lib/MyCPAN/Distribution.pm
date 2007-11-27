@@ -35,7 +35,7 @@ has 'root_working_dir' => (
     coerce    => 1,
 );
 
-has 'unpack_dir' => (
+has 'unpack_root' => (
     is        => 'ro',
     isa       => Dir,
     coerce    => 1,
@@ -47,247 +47,128 @@ has 'unpack_dir' => (
         File::Temp::tempdir(
             do { (my $p = __PACKAGE__) =~ s/::/-/g; $p } . "-$$.XXXX",
             DIR => $self->root_working_dir,
-        ),
+        );
     },
 );
 
-# information after we unpack
-# XXX: rebless into MyCPAN::Dist::Unpacked?
-
 has 'dist_dir' => (
-    is         => 'rw',
+    is         => 'ro',
     isa        => Dir,
-    coerce     => 1,
     predicate  => 'has_dist_dir',
+    default    => sub { shift->_unpack },
+    lazy       => 1,
+    coerce     => 1,
 );
 
 sub extracted { shift->has_dist_dir } # alias
 
-has 'archive_type' => (
-    is         => 'rw',
-    isa        => 'ArchiveType',
-    predicate  => 'has_archive_type',
+has 'md5' => (
+    is        => 'ro',
+    isa       => 'MD5',
+    predicate => 'has_md5',
+    lazy      => 1,
+    default   => sub { shift->_md5 },
 );
 
 has 'manifest' => (
-    is         => 'rw',
+    is         => 'ro',
     isa        => 'ArrayRef[Str]', # TODO: ArrayRef[File]
     predicate  => 'has_manifest',
-    default    => sub { [] },
+    default    => sub { shift->_manifest },
     auto_deref => 1,
+    lazy       => 1,
 );
 
-has 'blib' => (
-    is         => 'rw',
-    isa        => 'ArrayRef[Str]', # TODO: ArrayRef[File]
-    predicate  => 'has_blib',
-    default    => sub { [] },
-    auto_deref => 1,
+has 'module_files' => (
+    is          => 'ro',
+    isa         => 'ArrayRef[Str]',
+    default     => sub { [grep { m!lib/.+[.]pm$! } shift->manifest] },
+    auto_deref  => 1,
+    lazy        => 1,
 );
 
 has 'meta_yml' => (
-    is         => 'rw',
+    is         => 'ro',
     isa        => 'HashRef',
     predicate  => 'has_meta_yml',
-    default    => sub { {} },
+    default    => sub { shift->_meta_yml },
     auto_deref => 1,
-);
-
-has 'build_file' => (
-    is         => 'rw',
-    isa        => File,
-    predicate  => 'has_build_file',
-    coerce     => 1,
-);
-
-has 'build_file_output' => (
-    is  => 'rw',
-    isa => 'Str',
-);
-
-has 'build_output' => (
-    is  => 'rw',
-    isa => 'Str',
-);
-
-has 'module_list' => (
-    is      => 'rw',
-    isa     => 'ArrayRef',
-    default => sub { [] },
+    lazy       => 1,
 );
 
 has 'module_versions' => (
     metaclass  => 'Collection::Hash',
-    is         => 'rw',
+    is         => 'ro',
     isa        => 'HashRef',
-    default    => sub { {} },
-    provides   => {
+    default    => sub { shift->_module_versions },
+    auto_deref => 1,
+    lazy       => 1,
+    provides   => {        
         keys => 'modules',
         get  => 'module_version',
     },
-    auto_deref => 1,
 );
 
-has 'md5' => (
-    is        => 'rw',
-    isa       => 'MD5',
-    predicate => 'has_md5',
-);
+sub path_to {
+    my ($self, @parts) = @_;
+    my $file = Path::Class::file($self->dist_dir, @parts);
 
-# this is where we index everything, so that the above attributes
-# are always populated
-sub BUILD {
-    my $self = shift;
-    my $filename = $self->filename;
-    die "[$filename] does not exist" unless -e $filename;
-    
-    $self->calc_md5;
-    $self->unpack;
-    { 
-        my $dir = pushd($self->dist_dir);
-        $self->get_file_list;
-        $self->parse_meta_files;
-        $self->run_build_file;
-        $self->get_blib_file_list;
-        $self->get_module_versions;  
-    }
+    return Path::Class::dir($file) if -d $file; # coerce into directory
+    return $file;
 }
 
-sub unpack {
+sub _cd_to_dist {
+    my $self = shift;
+    return pushd($self->dist_dir);
+}
+
+sub _unpack {
     my ($self) = @_;
     my $dist = $self->filename;
-    my $unpack_dir = $self->unpack_dir;
+    my $unpack_root = $self->unpack_root;
     
-    DEBUG( "Unpacking into directory [$unpack_dir]" );
-    
+    DEBUG( "Unpacking into directory [$unpack_root]" );
     my $extractor = Archive::Extract->new( archive => $dist );
-    $self->archive_type( $extractor->type );
-    
-    my $rc = $extractor->extract( to => $unpack_dir );
+    my $rc = $extractor->extract( to => $unpack_root );
     DEBUG( "Archive::Extract returns [$rc]" );
     
-    $self->dist_dir( $extractor->extract_path );
     return $extractor->extract_path;        
 }
 
-sub get_file_list {
+sub _manifest {
     my $self = shift;
-    
-    die "No Makefile.PL or Build.PL"    
-      unless( -e 'Makefile.PL' or -e 'Build.PL' );
-    
-    my $manifest = [ sort keys %{ ExtUtils::Manifest::manifind() } ];
-    $self->manifest($manifest);
-    
-    return $self->manifest; # arrayref in scalar context, list otherwise
+    my $dir = $self->_cd_to_dist;
+    return [ sort keys %{ ExtUtils::Manifest::manifind() } ];
 }
 
-sub get_blib_file_list {
+sub _meta_yml {
     my $self = shift;
-    
-    die "No blib/lib found!" 
-      unless( -d 'blib/lib' );
+    my $meta = $self->path_to('META.yml');
 
-    my $blib = [ grep { m|^blib/| and ! m|.exists$| } 
-                   sort keys %{ ExtUtils::Manifest::manifind() } ];
-    $self->blib($blib);
-
-    return $self->blib;
+    return YAML::Syck::LoadFile( $meta ) if -e $meta;
+    return {};
 }
 
-sub parse_meta_files {
+sub _module_versions {
     my $self = shift;
     
-    if( -e 'META.yml'  ){
-        my $yaml = YAML::Syck::LoadFile( 'META.yml' );
-        $self->meta_yml($yaml);
-    }
-    
-    return 1;    
-}
+    die "No module list in self!" unless $self->module_files;
 
-sub run_build_file {
-    my $self = shift;
-    
-    $self->choose_build_file;
-    $self->setup_build;
-    $self->run_build;
-
-    return 1;    
-}
-
-sub choose_build_file {
-    my $self = shift;
-    
-    my $file =  -e "Build.PL"    ? "Build.PL" :
-                -e "Makefile.PL" ? "Makefile.PL" : undef;
-        
-    die "Did not find Makefile.PL or Build.PL" 
-      unless( defined $file );
-
-    $self->build_file($file);
-    
-    return 1;
-}
-
-sub setup_build {
-    my $self = shift;
-
-    my $file = $self->build_file;
-    my $command = "$^X $file";
-    
-    $self->_run_something( $command, 'build_file_output' );    
-}
-    
-sub run_build    {
-    my $self = shift;
-    
-    my $file = $self->build_file;
-    my $command = $file eq 'Build.PL' ? "$^X ./Build" : "make";
-    
-    $self->_run_something( $command, 'build_output' );
-}
-        
-sub _run_something   {
-    my $self = shift;
-    my( $command, $info_key ) = @_;
-    
-    {
-    require IPC::Open2;
-    DEBUG( "Running $command" );
-    my $pid = IPC::Open2::open2( my $read, my $write, $command );
-    
-    close $write;
-    
-        { 
-            local $/; 
-            my $output = <$read>; 
-            $self->$info_key( $output );
-        }
-    }
-}
-
-sub get_module_versions {
-    my $self = shift;
-    
-    die "No blib list in self!" unless $self->has_blib;
-    
     my $modules_hash = { 
-        map { my $version = $self->parse_version_safely( $_->[1] ); 
+        map { my $version = $self->_parse_version_safely( $_->[1] ); 
               ( $_->[0], $version ) 
           }
           map { my $s = $_; 
-                $s =~ s|^blib/lib/||; 
+                $s =~ s|^(?:blib/)?lib/||; 
                 $s =~ s|/|::|g; $s =~ s/.pm$//; 
                 [ $s, $_ ] 
-            }
-            grep { m|^blib/lib/| and  m|\.pm$| } $self->blib 
-        };
+            } $self->module_files
+    };
     
-    $self->module_versions( $modules_hash );
+    return $modules_hash;
 }
 
-sub parse_version_safely # stolen from PAUSE's mldistwatch, but refactored
+sub _parse_version_safely # stolen from PAUSE's mldistwatch, but refactored
     {
     my $self = shift;
     my $file = shift;
@@ -295,10 +176,8 @@ sub parse_version_safely # stolen from PAUSE's mldistwatch, but refactored
     local $/ = "\n";
     local $_; # don't mess with the $_ in the map calling this
     
-    my $fh;
-
-    die "Could not open file [$file]: $!"
-      unless( open $fh, "<", $file );
+    open my $fh, "<", $self->path_to($file) or
+      die "Could not open file [$file]: $!";
     
     my $in_pod = 0;
     my $version;
@@ -311,7 +190,7 @@ sub parse_version_safely # stolen from PAUSE's mldistwatch, but refactored
         next unless /([\$*])(([\w\:\']*)\bVERSION)\b.*\=/;
         my( $sigil, $var ) = ( $1, $2 );
         
-        $version = $self->eval_version( $_, $sigil, $var );
+        $version = $self->_eval_version( $_, $sigil, $var );
         DEBUG( "Got  version [$version]" );
         last;
         }
@@ -320,7 +199,7 @@ sub parse_version_safely # stolen from PAUSE's mldistwatch, but refactored
     return $version;
 }
 
-sub eval_version {
+sub _eval_version {
     my $self = shift;
     
     my( $line, $sigil, $var ) = @_;
@@ -349,7 +228,7 @@ sub eval_version {
     return $version;
 }
 
-sub calc_md5 {
+sub _md5 {
     my $self = shift;
     my $filename = $self->filename;
     
@@ -364,14 +243,14 @@ sub calc_md5 {
 
     DEBUG( "md5 of [$filename] is [$md5]" );
     
-    return $self->md5($md5);
+    return $md5;
 }
 
 sub cleanup {
     my $self = shift;
     File::Path::rmtree(
         [
-            $self->unpack_dir,
+            $self->dist_dir,
         ],
         0, 0
     );
