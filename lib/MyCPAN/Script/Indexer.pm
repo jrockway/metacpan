@@ -68,8 +68,15 @@ sub run {
 sub index_dist {
     my $self = shift;
     my $filename = shift;
-    
+
     my $dist = MyCPAN::Distribution->new(filename => $filename);
+    
+    # how haskelly.  i have to force these to evaluate
+    $dist->md5;
+    $dist->meta_yml;
+    $dist->module_files;
+    $dist->module_versions;
+    
     print "Indexed $filename\n";
     print Dumper($dist);
     
