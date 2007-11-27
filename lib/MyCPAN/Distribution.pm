@@ -250,7 +250,7 @@ sub cleanup {
     my $self = shift;
     File::Path::rmtree(
         [
-            $self->dist_dir,
+            $self->unpack_root,
         ],
         0, 0
     );
