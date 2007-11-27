@@ -90,6 +90,7 @@ has 'meta_yml' => (
     isa        => 'HashRef',
     predicate  => 'has_meta_yml',
     default    => sub { {} },
+    auto_deref => 1,
 );
 
 has 'build_file' => (
