@@ -56,40 +56,42 @@ override 'index_dist' => sub {
             }
             
             # add prereqs
-            my %requires       = %{$dist->meta_yml->{requires}};
-            my %build_requires = %{$dist->meta_yml->{build_requires}};
-            
-            while(my ($module, $version) = each %requires){
-                $db_dist->create_related( prerequisites => {
-                    module     => $module,
-                    version    => $version,
-                    build_only => 0,
-                });
-            }
-            
-            while(my ($module, $version) = each %build_requires){
-                $db_dist->create_related( prerequisites => {
-                    module     => $module,
-                    version    => $version,
-                    build_only => 1,
-                });
-            }
+            if($dist->has_meta_yml){
+                my %requires       = %{$dist->meta_yml->{requires} || {}};
+                my %build_requires = %{$dist->meta_yml->{build_requires} || {}};
+                
+                while(my ($module, $version) = each %requires){
+                    $db_dist->create_related( prerequisites => {
+                        module     => $module,
+                        version    => $version,
+                        build_only => 0,
+                    });
+                }
+                
+                while(my ($module, $version) = each %build_requires){
+                    $db_dist->create_related( prerequisites => {
+                        module     => $module,
+                        version    => $version,
+                        build_only => 1,
+                    });
+                }
 
-            # add other info from META.yml that's easy to extract
-            # TODO: translate something like:
-            #   { foo => { bar => [qw/baz quux/], fooo => 'bar' } }
-            # to
-            #   foo.bar  => baz
-            #   foo.bar  => quux
-            #   foo.fooo => bar
-            # sort of like clearsilver's HDF
-            my %meta = $dist->meta_yml;
-            my @stringy_keys = grep { !ref $meta{$_} } keys %meta;
-            foreach my $key (@stringy_keys){
-                $db_dist->create_related( metadata => {
-                    key   => $key,
-                    value => $meta{$key},
-                });
+                # add other info from META.yml that's easy to extract
+                # TODO: translate something like:
+                #   { foo => { bar => [qw/baz quux/], fooo => 'bar' } }
+                # to
+                #   foo.bar  => baz
+                #   foo.bar  => quux
+                #   foo.fooo => bar
+                # sort of like clearsilver's HDF
+                my %meta = $dist->meta_yml;
+                my @stringy_keys = grep { !ref $meta{$_} } keys %meta;
+                foreach my $key (@stringy_keys){
+                    $db_dist->create_related( metadata => {
+                        key   => $key,
+                        value => $meta{$key},
+                    });
+                }
             }
         }
     );
