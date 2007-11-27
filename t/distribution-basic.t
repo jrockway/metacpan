@@ -49,4 +49,3 @@ my $meta = $dist->meta_yml;
 
 ok ref $meta, 'got meta';
 is $meta->{name}, 'Angerwhale';
-
