@@ -15,6 +15,7 @@ has 'database' => (
 has '_schema' => (
     is      => 'rw',
     isa     => 'MyCPAN::DB',
+    lazy    => 1,
     default => sub { MyCPAN::DB->connect($_[0]->database) },
 );
 
