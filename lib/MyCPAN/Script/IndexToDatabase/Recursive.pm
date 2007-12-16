@@ -25,8 +25,9 @@ sub BUILD {
     find ( 
         sub { 
             my $f = $File::Find::name;
-            push @files, $f if -r $f && !-d $f && $f !~ /CHECKSUMS$/
-        }, 
+            push @files, $f if -r $f && !-d $f && 
+              $f !~ /(?:README|META|CHECKSUMS)$/i
+          }, 
         $self->path 
     );
     
