@@ -46,6 +46,7 @@ has 'log_level' => (
 sub BUILD {
     my $self = shift;
     $self->_setup_log;
+    $SIG{__WARN__} = sub { WARN (@_) };
 }
 
 sub _setup_log {
