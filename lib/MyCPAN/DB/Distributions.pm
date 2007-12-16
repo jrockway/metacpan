@@ -19,9 +19,12 @@ __PACKAGE__->add_columns(
   { data_type => "varchar", is_nullable => 0, size => 32 },
   "release_date",
   { data_type => "datetime", is_nullable => 0, size => undef },
+  "indexing_run",
+  { data_type => 'INTEGER', is_nullable => 0, size => undef },
 );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->belongs_to( author => 'MyCPAN::DB::Authors' );
+__PACKAGE__->belongs_to( indexing_run => 'MyCPAN::DB::IndexingRuns' );
 __PACKAGE__->has_many( modules => 'MyCPAN::DB::Modules', 'distribution' );
 __PACKAGE__->has_many(
     files =>
@@ -40,4 +43,3 @@ __PACKAGE__->has_many(
 );
 
 1;
-

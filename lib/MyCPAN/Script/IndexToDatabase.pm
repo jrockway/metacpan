@@ -19,6 +19,26 @@ has '_schema' => (
     default => sub { MyCPAN::DB->connect($_[0]->database) },
 );
 
+
+has '_indexing_run' => (
+    isa => 'MyCPAN::DB::IndexingRuns',
+    is  => 'rw',
+);
+
+sub BUILD {
+    my $self = shift;
+    $self->_indexing_run($self->_schema->resultset('IndexingRuns')->create({
+        indexing_started => DateTime->now,
+    }));
+}
+
+sub DEMOLISH {
+    my $self = shift;
+    $self->_indexing_run->update({ 
+        indexing_ended => DateTime->now,
+    });
+}
+
 override 'index_dist' => sub {
     my ($self, $filename) = @_;
     my $schema = $self->_schema;
@@ -27,17 +47,19 @@ override 'index_dist' => sub {
     $schema->txn_do(
         sub {
             # add author
+            $filename =~ m{id/[A-Za-z]/[A-Za-z]{2}/([A-Za-z]+)/};
+            my $pause = $1 || 'NULL';
+            
             my $db_author = $schema->resultset('Authors')->find_or_create({ 
-                pause_id => 'NULL', # for testing only
-                name     => 'Null Author',
+                pause_id => $pause,
             });
             
             # add dist
             my $db_dist = $db_author->create_related( distributions => {
                 filename     => $dist->filename,
                 md5          => $dist->md5,
-                # normally populated by modules@ mailing list parser
                 release_date => DateTime->now, 
+                indexing_run => $self->_indexing_run,
             });
 
             # add modules

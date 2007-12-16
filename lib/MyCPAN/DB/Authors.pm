@@ -14,7 +14,7 @@ __PACKAGE__->add_columns(
   "pause_id",
   { data_type => "varchar", is_nullable => 0, size => 32 },
   "name",
-  { data_type => "TEXT", is_nullable => 0, size => undef },
+  { data_type => "TEXT", is_nullable => 1, size => undef },
   "email",
   { data_type => "TEXT", is_nullable => 1, size => undef },
   "website",
