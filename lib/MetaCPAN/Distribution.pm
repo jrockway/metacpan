@@ -1,4 +1,4 @@
-package MyCPAN::Distribution;
+package MetaCPAN::Distribution;
 use Moose;
 use MooseX::Types::Path::Class qw(File Dir);
 use MooseX::AttributeHelpers;

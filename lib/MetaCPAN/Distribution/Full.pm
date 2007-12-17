@@ -1,13 +1,13 @@
-package MyCPAN::Distribution::Full;
+package MetaCPAN::Distribution::Full;
 use Moose;
 use Moose::Util::TypeConstraints;
 use Log::Log4perl qw(:easy);
 
-extends 'MyCPAN::Distribution';
+extends 'MetaCPAN::Distribution';
 
 =head1 NAME
 
-MyCPAN::Distribution::Full - C<MyCPAN::Distribution> that runs
+MetaCPAN::Distribution::Full - C<MetaCPAN::Distribution> that runs
 Makefile.PL and make before doing its thing
 
 =cut

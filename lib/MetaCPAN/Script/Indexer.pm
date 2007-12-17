@@ -1,10 +1,10 @@
-package MyCPAN::Script::Indexer;
+package MetaCPAN::Script::Indexer;
 use Moose;
 use MooseX::Getopt;
 use Moose::Util::TypeConstraints;
 
 use Data::Dumper;
-use MyCPAN::Distribution;
+use MetaCPAN::Distribution;
 use Log::Log4perl qw(:easy);
 use Perl6::Junction qw(any);
 
@@ -70,7 +70,7 @@ sub index_dist {
     my $self = shift;
     my $filename = shift;
 
-    my $dist = MyCPAN::Distribution->new(filename => $filename);
+    my $dist = MetaCPAN::Distribution->new(filename => $filename);
     
     # how haskelly.  i have to force these to evaluate
     $dist->md5;

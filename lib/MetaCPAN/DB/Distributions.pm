@@ -1,4 +1,4 @@
-package MyCPAN::DB::Distributions;
+package MetaCPAN::DB::Distributions;
 
 use strict;
 use warnings;
@@ -23,22 +23,22 @@ __PACKAGE__->add_columns(
   { data_type => 'INTEGER', is_nullable => 0, size => undef },
 );
 __PACKAGE__->set_primary_key("id");
-__PACKAGE__->belongs_to( author => 'MyCPAN::DB::Authors' );
-__PACKAGE__->belongs_to( indexing_run => 'MyCPAN::DB::IndexingRuns' );
-__PACKAGE__->has_many( modules => 'MyCPAN::DB::Modules', 'distribution' );
+__PACKAGE__->belongs_to( author => 'MetaCPAN::DB::Authors' );
+__PACKAGE__->belongs_to( indexing_run => 'MetaCPAN::DB::IndexingRuns' );
+__PACKAGE__->has_many( modules => 'MetaCPAN::DB::Modules', 'distribution' );
 __PACKAGE__->has_many(
     files =>
-      'MyCPAN::DB::DistributionManifest',
+      'MetaCPAN::DB::DistributionManifest',
     'distribution'
 );
 __PACKAGE__->has_many(
     prerequisites =>
-      'MyCPAN::DB::DistributionPrerequisites',
+      'MetaCPAN::DB::DistributionPrerequisites',
     'distribution'
 );
 __PACKAGE__->has_many(
     metadata =>
-      'MyCPAN::DB::DistributionMetadata',
+      'MetaCPAN::DB::DistributionMetadata',
     'distribution'
 );
 

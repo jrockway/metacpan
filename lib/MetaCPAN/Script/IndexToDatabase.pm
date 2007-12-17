@@ -1,10 +1,10 @@
-package MyCPAN::Script::IndexToDatabase;
+package MetaCPAN::Script::IndexToDatabase;
 use Moose;
 
-use MyCPAN::DB;
+use MetaCPAN::DB;
 use DateTime;
 
-extends 'MyCPAN::Script::Indexer';
+extends 'MetaCPAN::Script::Indexer';
 
 has 'database' => (
     is       => 'ro',
@@ -14,14 +14,14 @@ has 'database' => (
 
 has '_schema' => (
     is      => 'rw',
-    isa     => 'MyCPAN::DB',
+    isa     => 'MetaCPAN::DB',
     lazy    => 1,
-    default => sub { MyCPAN::DB->connect($_[0]->database) },
+    default => sub { MetaCPAN::DB->connect($_[0]->database) },
 );
 
 
 has '_indexing_run' => (
-    isa => 'MyCPAN::DB::IndexingRuns',
+    isa => 'MetaCPAN::DB::IndexingRuns',
     is  => 'rw',
 );
 
@@ -42,7 +42,7 @@ sub DEMOLISH {
 override 'index_dist' => sub {
     my ($self, $filename) = @_;
     my $schema = $self->_schema;
-    my $dist = MyCPAN::Distribution->new(filename => $filename);
+    my $dist = MetaCPAN::Distribution->new(filename => $filename);
     
     $schema->txn_do(
         sub {

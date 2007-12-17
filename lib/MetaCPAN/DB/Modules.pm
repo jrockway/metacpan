@@ -1,4 +1,4 @@
-package MyCPAN::DB::Modules;
+package MetaCPAN::DB::Modules;
 
 use strict;
 use warnings;
@@ -19,6 +19,6 @@ __PACKAGE__->add_columns(
   { data_type => "TEXT", is_nullable => 1, size => undef },
 );
 __PACKAGE__->set_primary_key("id");
-__PACKAGE__->belongs_to( distribution => 'MyCPAN::DB::Distributions' );
+__PACKAGE__->belongs_to( distribution => 'MetaCPAN::DB::Distributions' );
 
 1;

@@ -1,4 +1,4 @@
-package MyCPAN::DB::Authors;
+package MetaCPAN::DB::Authors;
 
 use strict;
 use warnings;
@@ -22,6 +22,6 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__->set_primary_key("id");
 __PACKAGE__->add_unique_constraint( pause => [qw/pause_id/] );
-__PACKAGE__->has_many( distributions => 'MyCPAN::DB::Distributions', 'author');
+__PACKAGE__->has_many( distributions => 'MetaCPAN::DB::Distributions', 'author');
 
 1;

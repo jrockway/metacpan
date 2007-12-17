@@ -18,6 +18,5 @@ Moose::Util::TypeConstraints
 MooseX::AttributeHelpers
 MooseX::Getopt
 MooseX::Types::Path::Class
-MyCPAN::Distribution
 Perl6::Junction 
 YAML::Syck

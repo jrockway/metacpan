@@ -1,9 +1,9 @@
-package MyCPAN::Script::IndexToDatabase::Recursive;
+package MetaCPAN::Script::IndexToDatabase::Recursive;
 use Moose;
 use MooseX::Types::Path::Class qw(Dir);
 use File::Find;
 
-extends 'MyCPAN::Script::IndexToDatabase';
+extends 'MetaCPAN::Script::IndexToDatabase';
 
 has '+dists' => (
     required => 0,

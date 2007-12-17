@@ -5,5 +5,5 @@ use warnings;
 use FindBin '$Bin';
 use lib "$Bin/../lib";
 
-use MyCPAN::Script::Indexer;
-MyCPAN::Script::Indexer->new_with_options->run;
+use MetaCPAN::Script::Indexer;
+MetaCPAN::Script::Indexer->new_with_options->run;

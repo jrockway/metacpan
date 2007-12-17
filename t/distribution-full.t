@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Test::More tests => 18;
 
-use ok 'MyCPAN::Distribution::Full';
+use ok 'MetaCPAN::Distribution::Full';
 my $dist;
 
 sub assert_unset($) {
@@ -15,8 +15,8 @@ sub assert_unset($) {
 # XXX: no.
 my $test_dist = '/cpan/authors/id/J/JR/JROCKWAY/Angerwhale-0.062.tar.gz';
 
-$dist = MyCPAN::Distribution::Full->new( filename => $test_dist );
-isa_ok $dist, 'MyCPAN::Distribution::Full';
+$dist = MetaCPAN::Distribution::Full->new( filename => $test_dist );
+isa_ok $dist, 'MetaCPAN::Distribution::Full';
 
 assert_unset 'build_file';
 assert_unset 'build_file_output';

@@ -1,4 +1,4 @@
-package MyCPAN::DB;
+package MetaCPAN::DB;
 
 use strict;
 use warnings;

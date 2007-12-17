@@ -1,4 +1,4 @@
-package MyCPAN::DB::IndexingRuns;
+package MetaCPAN::DB::IndexingRuns;
 use strict;
 use warnings;
 
@@ -16,7 +16,7 @@ __PACKAGE__->add_columns(
   { data_type => "datetime", is_nullable => 1, size => undef },
 );
 __PACKAGE__->set_primary_key("id");
-__PACKAGE__->has_many( distributions => 'MyCPAN::DB::Distributions',
+__PACKAGE__->has_many( distributions => 'MetaCPAN::DB::Distributions',
                        'indexing_run' );
 
 1;

@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Test::More tests => 20;
 
-use ok 'MyCPAN::Distribution';
+use ok 'MetaCPAN::Distribution';
 my $dist;
 
 sub assert_unset($) {
@@ -15,8 +15,8 @@ sub assert_unset($) {
 # XXX: no.
 my $test_dist = '/cpan/authors/id/J/JR/JROCKWAY/Angerwhale-0.062.tar.gz';
 
-$dist = MyCPAN::Distribution->new( filename => $test_dist );
-isa_ok $dist, 'MyCPAN::Distribution';
+$dist = MetaCPAN::Distribution->new( filename => $test_dist );
+isa_ok $dist, 'MetaCPAN::Distribution';
 
 # test laziness
 assert_unset 'dist_dir';
