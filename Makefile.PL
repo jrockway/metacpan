@@ -7,6 +7,8 @@ requires 'Catalyst::Runtime' => '5.7011';
 requires 'Catalyst::Plugin::ConfigLoader';
 requires 'Catalyst::Plugin::Static::Simple';
 requires 'Catalyst::Action::RenderView';
+requires 'Catalyst::View::Template::Declare';
+
 requires 'YAML'; # This should reflect the config file format you've chosen
                  # See Catalyst::Plugin::ConfigLoader for supported formats
 
@@ -28,7 +30,7 @@ requires 'Moose::Util::TypeConstraints';
 requires 'MooseX::AttributeHelpers';
 requires 'MooseX::Getopt';
 requires 'MooseX::Types::Path::Class';
-requires 'Perl6::Junction ';
+requires 'Perl6::Junction';
 requires 'YAML::Syck';
 
 catalyst;
