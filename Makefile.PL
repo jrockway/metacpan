@@ -1,7 +1,7 @@
 use inc::Module::Install;
 
-name 'MetaCPAN-Web';
-all_from 'lib/MetaCPAN/Web.pm';
+name 'MetaCPAN';
+all_from 'lib/MetaCPAN.pm';
 
 requires 'Catalyst::Runtime' => '5.7011';
 requires 'Catalyst::Plugin::ConfigLoader';
