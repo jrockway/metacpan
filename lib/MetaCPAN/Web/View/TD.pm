@@ -1,6 +1,7 @@
 package MetaCPAN::Web::View::TD;
 use strict;
 use warnings;
+use Template::Declare;
 use base 'Catalyst::View::Template::Declare';
 1;
 
