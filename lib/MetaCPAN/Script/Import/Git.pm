@@ -171,13 +171,24 @@ sub import_tarfiles {
         my $files = File::Next::files($dest);
         while(defined( my $file = $files->() )){
             $file = Path::Class::file($file);
-            my $content  = $file->slurp;
+            my $content;
+            if(-l $file){
+                $content = readlink $file;
+            }
+            else {
+                $content = $file->slurp;
+            }
             my $length   = length $content;
             my $filename = $file;
             $filename =~ s{^$dest/}{}g;
+            my $permissions =
+              -l $file ? '120000' : 
+              -x $file ? '100755' : 
+                         '100644' ;
+            
             print {$git} strip qq{
                 # adding $filename (from $file inside @{[$source->[1]]})
-                M 100644 inline $filename
+                M $permissions inline $filename
                 data $length
             }, "$content\n";
         }
