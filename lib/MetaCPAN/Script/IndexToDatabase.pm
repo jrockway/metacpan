@@ -5,20 +5,7 @@ use MetaCPAN::DB;
 use DateTime;
 
 extends 'MetaCPAN::Script::Indexer';
-
-has 'database' => (
-    is       => 'ro',
-    isa      => 'Str',
-    required => 1,
-);
-
-has '_schema' => (
-    is      => 'rw',
-    isa     => 'MetaCPAN::DB',
-    lazy    => 1,
-    default => sub { MetaCPAN::DB->connect($_[0]->database) },
-);
-
+with 'MetaCPAN::Script::Role::WithDatabase';
 
 has '_indexing_run' => (
     isa => 'MetaCPAN::DB::IndexingRuns',
@@ -51,7 +38,7 @@ override 'index_dist' => sub {
             my $pause = $1 || 'NULL';
             
             my $db_author = $schema->resultset('Authors')->find_or_create({ 
-                pause_id => $pause,
+                pause_id => uc $pause,
             });
             
             # add dist
