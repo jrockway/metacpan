@@ -57,7 +57,7 @@ has 'backpan' => (
     required => 1,
     coerce   => 1,
 );
-    
+
 has '_schema' => (
     is      => 'rw',
     isa     => 'MetaCPAN::DB',
@@ -89,15 +89,15 @@ sub determine_sources {
     my @candidates = sort { qv($a->[0]) <=> qv($b->[0]) } map {
         [$_->version, $_->distribution->filename, $_->distribution->release_date, $_]
      } $modules->all;
-    
+
 #    for (@candidates){
 #        print "  ". join ",", @$_; print "\n";
 #    }
-    
+
     # XXX: this should be done in the indexer
     foreach my $c (@candidates){
         my $filename = $c->[1];
-        $filename =~ m{/authors/id/([a-z]/[a-z][a-z]/[a-z]+/[^/]+)$} 
+        $filename =~ m{/authors/id/([a-z]/[a-z][a-z]/[a-z]+/[^/]+)$}
           or confess 'Invalid filename';
         $c->[1] = $self->backpan->subdir('authors/id')->file($1)->absolute;
     }
@@ -150,7 +150,7 @@ sub import_tarfiles {
                 DateTime->now,
             );
             $now = "$now +0000";
-            
+
             $commit_message = "$version CPAN release";
             my $commit_length  = length $commit_message;
             $commit_message =~ s/EOM//g; # just to be safe.
@@ -161,7 +161,7 @@ sub import_tarfiles {
                 committer "git-cpan" <jon\@jrock.us> $now
                 data <<EOM
             }, "$commit_message\nEOM\n\n","deleteall\n";
-            
+
         }
 
         my @files = grep { !/^..?$/ }$dest->open->read;
@@ -182,10 +182,10 @@ sub import_tarfiles {
             my $filename = $file;
             $filename =~ s{^$dest/}{}g;
             my $permissions =
-              -l $file ? '120000' : 
-              -x $file ? '100755' : 
+              -l $file ? '120000' :
+              -x $file ? '100755' :
                          '100644' ;
-            
+
             print {$git} strip qq{
                 # adding $filename (from $file inside @{[$source->[1]]})
                 M $permissions inline $filename
