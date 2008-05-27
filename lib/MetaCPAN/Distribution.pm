@@ -90,7 +90,7 @@ has 'manifest' => (
 has 'module_files' => (
     is          => 'ro',
     isa         => 'ArrayRef[Str]',
-    default     => sub { [grep { m!lib/.+[.]pm$! } shift->manifest] },
+    default     => sub { [grep { m![.]pm$! } shift->manifest] },
     auto_deref  => 1,
     lazy        => 1,
 );
