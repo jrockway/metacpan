@@ -120,7 +120,6 @@ sub import_tarfiles {
     my $pwd = pushd $self->repository;
     open my $git, '|-', 'git', 'fast-import', '--quiet' or
       confess "Could not open git fast-import: $!";
-    #open my $git, '>', '/tmp/foo';
 
     my $formatter = DateTime::Format::Epoch->new(
         # congratulations on the worst API ever.
@@ -161,7 +160,8 @@ sub import_tarfiles {
                 author "$fullname" <$email> $date
                 committer "git-cpan" <jon\@jrock.us> $now
                 data <<EOM
-            }, "$commit_message\nEOM\n\n";
+            }, "$commit_message\nEOM\n\n","deleteall\n";
+            
         }
 
         my @files = grep { !/^..?$/ }$dest->open->read;
