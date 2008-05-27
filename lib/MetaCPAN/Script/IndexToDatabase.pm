@@ -58,7 +58,7 @@ override 'index_dist' => sub {
             my $db_dist = $db_author->create_related( distributions => {
                 filename     => $dist->filename,
                 md5          => $dist->md5,
-                release_date => DateTime->now, 
+                release_date => $dist->date || DateTime->now,
                 indexing_run => $self->_indexing_run,
             });
 

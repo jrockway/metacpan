@@ -77,6 +77,7 @@ sub index_dist {
     $dist->meta_yml;
     $dist->module_files;
     $dist->module_versions;
+    $dist->date;
     
     print "Indexed $filename\n";
     print Dumper($dist);

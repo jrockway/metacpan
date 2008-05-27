@@ -14,6 +14,7 @@ use IPC::Open2;
 use File::Path;
 use File::pushd;
 use Digest::MD5 ();
+use DateTime;
 
 enum 'ArchiveType' => qw(tgz bz2);
 
@@ -26,6 +27,13 @@ has 'filename' => (
     isa       => File,
     required  => 1,
     coerce    => 1,
+);
+
+has 'date' => (
+    is      => 'ro',
+    isa     => 'DateTime',
+    lazy    => 1,
+    default => sub { DateTime->from_epoch( epoch => [stat shift->filename]->[9] )},
 );
 
 has 'root_working_dir' => (
