@@ -14,15 +14,7 @@ use File::Next;
 use String::TT qw/strip/;
 use File::Temp qw/tempdir/;
 
-with qw/MooseX::Getopt/;
-
-subtype DSN => as Str => where { /DBI:/i };
-
-has 'database' => (
-    is       => 'ro',
-    isa      => 'DSN',
-    required => 1,
-);
+with qw/MooseX::Getopt MetaCPAN::Script::Role::WithDatabase/;
 
 subtype ModuleName => as Str => where {
     my $mod = $_;
@@ -56,13 +48,6 @@ has 'backpan' => (
     isa      => Dir,
     required => 1,
     coerce   => 1,
-);
-
-has '_schema' => (
-    is      => 'rw',
-    isa     => 'MetaCPAN::DB',
-    lazy    => 1,
-    default => sub { MetaCPAN::DB->connect($_[0]->database) },
 );
 
 sub BUILD {
