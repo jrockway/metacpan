@@ -26,6 +26,7 @@ requires 'Moose::Util::TypeConstraints';
 requires 'MooseX::AttributeHelpers';
 requires 'MooseX::Getopt';
 requires 'MooseX::Types::Path::Class';
+requires 'PerlIO::gzip';
 requires 'String::TT';
 requires 'YAML';
 requires 'YAML::Syck';
