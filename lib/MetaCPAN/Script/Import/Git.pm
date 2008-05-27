@@ -125,7 +125,8 @@ sub import_tarfiles {
         my ($commit_message, $fullname, $email, $date);
         { # start a commit
             my $d = $source->[0]->distribution;
-            $email    = uc($d->author->pause_id) . '@cpan.org';
+            $email    = $d->author->email;
+            $email  ||= uc($d->author->pause_id) . '@cpan.org';
             $fullname = $d->author->name || uc $d->author->pause_id;
             $date     = $formatter->format_datetime(
                 $source->[0]->distribution->release_date,
