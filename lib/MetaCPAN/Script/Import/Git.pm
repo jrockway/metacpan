@@ -150,7 +150,7 @@ sub import_tarfiles {
 
         }
 
-        my @files = grep { !/^..?$/ }$dest->open->read;
+        my @files = grep { !/^..?$/ } $dest->open->read;
         $dest = $dest->subdir($files[0]) if @files == 1;
 
         # now add the files one by one
