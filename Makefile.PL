@@ -13,6 +13,7 @@ requires 'DBIx::Class';
 requires 'Data::Dumper';
 requires 'DateTime';
 requires 'Digest::MD5';
+requires 'Digest::SHA1';
 requires 'ExtUtils::Manifest';
 requires 'File::Next';
 requires 'File::Path';

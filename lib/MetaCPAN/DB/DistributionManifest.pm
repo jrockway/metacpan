@@ -11,6 +11,8 @@ __PACKAGE__->add_columns(
   "id",
   { data_type => "INTEGER", is_nullable => 0, size => undef,
     is_auto_increment => 1 },
+  "sha1sum",
+  { data_type => "VARCHAR", is_nullable => 0, size => 40 },
   "distribution",
   { data_type => "INTEGER", is_nullable => 0, size => undef },
   "path",

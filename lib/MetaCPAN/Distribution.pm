@@ -14,11 +14,13 @@ use IPC::Open2;
 use File::Path;
 use File::pushd;
 use Digest::MD5 ();
+use Digest::SHA1 ();
 use DateTime;
+use File::Next;
 
 enum 'ArchiveType' => qw(tgz bz2);
 
-subtype 'MD5' 
+subtype 'MD5'
   => as 'Str'
   => where { /^[0-9a-f]{32}$/ };
 
@@ -47,10 +49,10 @@ has 'unpack_root' => (
     is        => 'ro',
     isa       => Dir,
     coerce    => 1,
-    
+
     # default is /tmp/MyCPAN-Distribution-PID.1234 or similar
     lazy      => 1,
-    default   => sub { 
+    default   => sub {
         my $self = shift;
         File::Temp::tempdir(
             do { (my $p = __PACKAGE__) =~ s/::/-/g; $p } . "-$$.XXXX",
@@ -87,6 +89,14 @@ has 'manifest' => (
     lazy       => 1,
 );
 
+has 'file_checksums' => (
+    is         => 'ro',
+    isa        => 'HashRef[Str]',
+    default    => sub { shift->_file_checksums },
+    auto_deref => 1,
+    lazy       => 1,
+);
+
 has 'module_files' => (
     is          => 'ro',
     isa         => 'ArrayRef[Str]',
@@ -112,7 +122,7 @@ has 'module_versions' => (
     default    => sub { shift->_module_versions },
     auto_deref => 1,
     lazy       => 1,
-    provides   => {        
+    provides   => {
         keys => 'modules',
         get  => 'module_version',
     },
@@ -135,19 +145,36 @@ sub _unpack {
     my ($self) = @_;
     my $dist = $self->filename;
     my $unpack_root = $self->unpack_root;
-    
+
     DEBUG( "Unpacking into directory [$unpack_root]" );
     my $extractor = Archive::Extract->new( archive => $dist );
     my $rc = $extractor->extract( to => $unpack_root );
     DEBUG( "Archive::Extract returns [$rc]" );
-    
-    return $extractor->extract_path;        
+
+    return $extractor->extract_path;
 }
 
 sub _manifest {
     my $self = shift;
     my $dir = $self->_cd_to_dist;
     return [ sort keys %{ ExtUtils::Manifest::manifind() } ];
+}
+
+sub _file_checksums {
+    my $self = shift;
+    my $dir = Path::Class::dir($self->dist_dir);
+
+    my %result;
+
+    my $files = File::Next::files( $dir->stringify );
+    while( defined ( my $file = $files->() ) ){
+        $file = Path::Class::file($file);
+        my $sha1 = Digest::SHA1->new;
+        $sha1->addfile( $file->openr );
+        $result{$file->relative($dir)} = $sha1->hexdigest;
+    }
+
+    return \%result;
 }
 
 sub _meta_yml {
@@ -160,20 +187,20 @@ sub _meta_yml {
 
 sub _module_versions {
     my $self = shift;
-    
+
     die "No module list in self!" unless $self->module_files;
 
-    my $modules_hash = { 
-        map { my $version = $self->_parse_version_safely( $_->[1] ); 
-              ( $_->[0], $version ) 
+    my $modules_hash = {
+        map { my $version = $self->_parse_version_safely( $_->[1] );
+              ( $_->[0], $version )
           }
-          map { my $s = $_; 
-                $s =~ s|^(?:blib/)?lib/||; 
-                $s =~ s|/|::|g; $s =~ s/.pm$//; 
-                [ $s, $_ ] 
+          map { my $s = $_;
+                $s =~ s|^(?:blib/)?lib/||;
+                $s =~ s|/|::|g; $s =~ s/.pm$//;
+                [ $s, $_ ]
             } $self->module_files
     };
-    
+
     return $modules_hash;
 }
 
@@ -181,16 +208,16 @@ sub _parse_version_safely # stolen from PAUSE's mldistwatch, but refactored
     {
     my $self = shift;
     my $file = shift;
-    
+
     local $/ = "\n";
     local $_; # don't mess with the $_ in the map calling this
-    
+
     open my $fh, "<", $self->path_to($file) or
       die "Could not open file [$file]: $!";
-    
+
     my $in_pod = 0;
     my $version;
-    while( <$fh> ) 
+    while( <$fh> )
         {
         chomp;
         $in_pod = /^=(?!cut)/ ? 1 : /^=cut/ ? 0 : $in_pod;
@@ -198,24 +225,24 @@ sub _parse_version_safely # stolen from PAUSE's mldistwatch, but refactored
 
         next unless /([\$*])(([\w\:\']*)\bVERSION)\b.*\=/;
         my( $sigil, $var ) = ( $1, $2 );
-        
+
         $version = $self->_eval_version( $_, $sigil, $var );
         DEBUG( "Got  version [$version]" );
         last;
         }
     close $fh;
-    
+
     return $version;
 }
 
 sub _eval_version {
     my $self = shift;
-    
+
     my( $line, $sigil, $var ) = @_;
-    
+
     DEBUG( "Evaling line [$line] with sigil [$sigil] and var [$var]" );
-    
-    my $eval = qq{ 
+
+    my $eval = qq{
 		package ExtUtils::MakeMaker::_version;
 
 		local $sigil$var;
@@ -223,16 +250,16 @@ sub _eval_version {
 			$line
 			}; \$$var
 		};
-    
+
     DEBUG( "Eval string is [------\n$eval\n--------\n" );
-    
+
     my $version = do {
         local $^W = 0;
         no strict;
         eval( $eval );
     };
     DEBUG( "Eval error is [$@]" ) if $@;
-    
+
     DEBUG( "Evaled to version [$version]" );
     return $version;
 }
@@ -240,18 +267,18 @@ sub _eval_version {
 sub _md5 {
     my $self = shift;
     my $filename = $self->filename;
-    
+
     DEBUG( "computing md5 of [$filename]" );
 
-    open my $fh, '<', $filename 
+    open my $fh, '<', $filename
       or die "failed to open $filename for reading: $!";
-    
+
     my $ctx = Digest::MD5->new;
     $ctx->addfile($fh);
     my $md5 = $ctx->hexdigest;
 
     DEBUG( "md5 of [$filename] is [$md5]" );
-    
+
     return $md5;
 }
 
@@ -263,7 +290,7 @@ sub cleanup {
         ],
         0, 0
     );
-    
+
     return 1;
 }
 
@@ -272,5 +299,5 @@ sub DEMOLISH {
     $self->cleanup;
     DEBUG( "DEMOLISHing $self (". $self->filename. ')' );
 }
-  
+
 1;

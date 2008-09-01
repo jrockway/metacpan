@@ -17,11 +17,11 @@ my %LOG_LEVELS = (
     debug   => $DEBUG,
 );
 
-subtype 'LogLevel' 
+subtype 'LogLevel'
   => as 'Num',
   => where { $_ == any(values %LOG_LEVELS) };
 
-coerce 'LogLevel' 
+coerce 'LogLevel'
   => from 'Str',
   => via { $LOG_LEVELS{$_} };
 
@@ -58,7 +58,7 @@ sub run {
     my $self = shift;
     foreach my $filename ($self->dists) {
         INFO ( "examining [$filename]" );
-        eval { 
+        eval {
             $self->index_dist($filename);
             INFO( "successfully indexed [$filename] " );
         };
@@ -71,17 +71,18 @@ sub index_dist {
     my $filename = shift;
 
     my $dist = MetaCPAN::Distribution->new(filename => $filename);
-    
+
     # how haskelly.  i have to force these to evaluate
     $dist->md5;
     $dist->meta_yml;
     $dist->module_files;
     $dist->module_versions;
     $dist->date;
-    
+    $dist->file_checksums;
+
     print "Indexed $filename\n";
     print Dumper($dist);
-    
+
     return $dist;
 }
 
