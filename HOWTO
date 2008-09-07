@@ -1,10 +1,10 @@
 First, start by creating the database:
 
-  $ dbicdeploy -Ilib MetaCPAN::Database DBI:SQLite:database
+  $ dbicdeploy -Ilib MetaCPAN::DB DBI:SQLite:database
 
 Then add some dists to the database:
 
-  $ perl bin/index_to_database.pl --database DBI:SQLite:database \ 
+  $ perl bin/index_to_database.pl --database DBI:SQLite:database \
     --log_level debug --dist /path/to/a/tarball.tar.gz
 
 If that's not working, try the plain indexer to get a dump of all the
