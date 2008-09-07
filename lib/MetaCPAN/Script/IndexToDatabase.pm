@@ -3,7 +3,7 @@ use Moose;
 
 use MetaCPAN::DB;
 use DateTime;
-use Digest::SHA1;
+use Log::Log4perl qw(:easy);
 
 extends 'MetaCPAN::Script::Indexer';
 with 'MetaCPAN::Script::Role::WithDatabase';
@@ -11,6 +11,12 @@ with 'MetaCPAN::Script::Role::WithDatabase';
 has '_indexing_run' => (
     isa => 'MetaCPAN::DB::IndexingRuns',
     is  => 'rw',
+);
+
+has 'skip_duplicates' => (
+    is      => 'ro',
+    isa     => 'Bool',
+    default => sub { 1 },
 );
 
 sub BUILD {
@@ -31,6 +37,15 @@ override 'index_dist' => sub {
     my ($self, $filename) = @_;
     my $schema = $self->_schema;
     my $dist = MetaCPAN::Distribution->new(filename => $filename);
+
+    # skip duplicates
+    if($self->skip_duplicates &&
+         $schema->resultset('Distributions')->
+           search( { md5 => $dist->md5 } )->count > 0)
+      {
+          DEBUG( "Skipping $filename; already indexed");
+          return;
+      }
 
     $schema->txn_do(
         sub {
@@ -58,7 +73,7 @@ override 'index_dist' => sub {
                 });
             }
 
-            # add manifest
+            # add manifest / checksums
             my %files = $dist->file_checksums;
             foreach my $file (keys %files){
                 $db_dist->create_related( files => {

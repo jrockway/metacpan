@@ -100,8 +100,7 @@ has 'file_checksums' => (
 has 'module_files' => (
     is          => 'ro',
     isa         => 'ArrayRef[Str]',
-    # XXX: this is too liberal
-    default     => sub { [grep { m![.]pm$! } shift->manifest] },
+    default     => sub { [grep { /[.]pm$/ && !m{^inc/} } shift->manifest] },
     auto_deref  => 1,
     lazy        => 1,
 );

@@ -1,6 +1,4 @@
 Stuff I want to do:
 
- * add META.yml data to the database
- * add MANIFEST to the database
  * parse "foo-bar.tar.gz has entered cpan as..." mails (to add release date)
-
+ * link modules <-> files table (should be easy)
