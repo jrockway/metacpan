@@ -165,7 +165,7 @@ sub _file_checksums {
 
     my %result;
 
-    my $files = File::Next::files( $dir->stringify );
+    my $files = File::Next::files( { follow_symlinks => 0 },  $dir->stringify );
     while( defined ( my $file = $files->() ) ){
         $file = Path::Class::file($file);
         my $sha1 = Digest::SHA1->new;
