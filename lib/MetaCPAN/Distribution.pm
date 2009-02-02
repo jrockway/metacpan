@@ -156,6 +156,7 @@ sub _unpack {
 sub _manifest {
     my $self = shift;
     my $dir = $self->_cd_to_dist;
+    DEBUG( "Reading manifest" );
     return [ sort keys %{ ExtUtils::Manifest::manifind() } ];
 }
 
@@ -167,6 +168,7 @@ sub _file_checksums {
 
     my $files = File::Next::files( { follow_symlinks => 0 },  $dir->stringify );
     while( defined ( my $file = $files->() ) ){
+        DEBUG( "Calculating SHA1 of $file" );
         $file = Path::Class::file($file);
         my $sha1 = Digest::SHA1->new;
         $sha1->addfile( $file->openr );
@@ -180,12 +182,15 @@ sub _meta_yml {
     my $self = shift;
     my $meta = $self->path_to('META.yml');
 
+    DEBUG( "Loading META.yml $meta" );
     return YAML::Syck::LoadFile( $meta ) if -e $meta;
     return {};
 }
 
 sub _module_versions {
     my $self = shift;
+
+    DEBUG( "Calculating module versions" );
 
     die "No module list in self!" unless $self->module_files;
 
@@ -211,6 +216,7 @@ sub _parse_version_safely # stolen from PAUSE's mldistwatch, but refactored
     local $/ = "\n";
     local $_; # don't mess with the $_ in the map calling this
 
+    DEBUG( "Loading $file for version parse" );
     open my $fh, "<", $self->path_to($file) or
       die "Could not open file [$file]: $!";
 
@@ -283,6 +289,7 @@ sub _md5 {
 
 sub cleanup {
     my $self = shift;
+    DEBUG( "Cleaning up ". $self->unpack_root );
     File::Path::rmtree(
         [
             $self->unpack_root,
