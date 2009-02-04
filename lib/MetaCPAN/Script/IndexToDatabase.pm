@@ -43,7 +43,7 @@ override 'index_dist' => sub {
          $schema->resultset('Distributions')->
            search( { md5 => $dist->md5 } )->count > 0)
       {
-          DEBUG( "Skipping $filename; already indexed");
+          INFO( "Skipping $filename; already indexed");
           return;
       }
 
