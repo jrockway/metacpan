@@ -21,7 +21,7 @@ requires 'File::Spec';
 requires 'File::Temp';
 requires 'File::pushd';
 requires 'IPC::Open3';
-requires 'JSON::Any';
+requires 'JSON::XS';
 requires 'Log::Log4perl';
 requires 'Moose';
 requires 'Moose::Util::TypeConstraints';

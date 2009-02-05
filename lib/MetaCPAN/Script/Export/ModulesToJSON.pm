@@ -1,6 +1,6 @@
 package MetaCPAN::Script::Export::ModulesToJSON;
 use Moose;
-use JSON::Any;
+use JSON::XS;
 use MooseX::Types::Path::Class qw(Dir);
 
 with qw/MooseX::Getopt MetaCPAN::Script::Role::WithDatabase/;
@@ -23,7 +23,7 @@ sub create_file_for {
     my ($self, $module, $data) = @_;
     my $file = $self->destination->file(join('/', split /::/, $module).'.json');
     $file->parent->mkpath;
-    my $json = JSON::Any->new->Dump($data);
+    my $json = JSON::XS->new->pretty->encode($data);
     print {$file->openw} $json;
 }
 
