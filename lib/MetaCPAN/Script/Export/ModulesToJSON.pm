@@ -12,6 +12,13 @@ has destination => (
     coerce   => 1,
 );
 
+has modules => (
+    is         => 'ro',
+    isa        => 'ArrayRef',
+    auto_deref => 1,
+    lazy_build => 1,
+);
+
 sub create_file_for {
     my ($self, $module, $data) = @_;
     my $file = $self->destination->file(join('/', split /::/, $module).'.json');
@@ -20,19 +27,24 @@ sub create_file_for {
     print {$file->openw} $json;
 }
 
-sub all_modules {
+sub _build_modules {
     my $self = shift;
-    return $self->_schema->resultset('Modules')->search({}, { group_by => 'package' })->get_column('package')->all;
+    return [
+        $self->_schema->resultset('Modules')->search(
+            {},
+            { group_by => 'package' }
+        )->get_column('package')->all,
+    ];
 }
 
 sub run {
     my $self = shift;
-    for my $module ($self->all_modules){
+    for my $module ($self->modules){
         $self->create_file_for(
             $module,
-            { 
+            {
                 versions => [
-                    map { 
+                    map {
                         my $dist = $_->distribution->filename;
                         $dist =~ s{^.+(id/.+)$}{$1};
                         $dist =~ s{id/(.)/(..)/(.+)/}{\U$1/$2/$3/}; # upcase
@@ -46,7 +58,7 @@ sub run {
                                 id    => $_->distribution->author->pause_id,
                             },
                         }
-                    } 
+                    }
                       $self->_schema->resultset('Modules')->search({
                           package => $module,
                       }, {
