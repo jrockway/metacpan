@@ -39,7 +39,12 @@ sub _build_modules {
 
 sub run {
     my $self = shift;
-    for my $module ($self->modules){
+    my @modules = $self->modules;
+    printf "Need to export %d modules\n", scalar @modules;
+    local $| = 1;
+    my $i = 0;
+    for my $module (@modules){
+        print "." if $i++ % 100 == 0;
         $self->create_file_for(
             $module,
             {
@@ -69,6 +74,7 @@ sub run {
             }
         );
     }
+    print "\nDone.\n";
 }
 
 1;
